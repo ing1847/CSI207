@@ -22,18 +22,35 @@ function Register() {
     password: '',
     confirmPassword: '',
   })
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
   const strength = getStrength(form.password)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    if (form.password !== form.confirmPassword) {
-      alert('รหัสผ่านไม่ตรงกัน')
-      return
+    setError('')
+    if (form.password !== form.confirmPassword) return setError('รหัสผ่านไม่ตรงกัน')
+    setLoading(true)
+    try {
+      const res = await fetch('http://localhost:5000/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form)
+      })
+      const data = await res.json()
+      if (!res.ok) return setError(data.error)
+      alert('สมัครสมาชิกสำเร็จ!')
+      navigate('/login')
+    } catch {
+      setError('ไม่สามารถเชื่อมต่อ server ได้')
+    } finally {
+      setLoading(false)
     }
-    console.log('Register:', form)
   }
 
+  const set = (key) => (e) => setForm({ ...form, [key]: e.target.value })
+  
   return (
     <div className="auth-page">
       <div className="auth-card">

@@ -14,10 +14,29 @@ const GoogleIcon = () => (
 function Login() {
   const navigate = useNavigate()
   const [form, setForm] = useState({ email: '', password: '' })
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log('Login:', form)
+    setError('')
+    setLoading(true)
+    try {
+      const res = await fetch('http://localhost:5000/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form)
+      })
+      const data = await res.json()
+      if (!res.ok) return setError(data.error)
+      localStorage.setItem('token', data.token)
+      localStorage.setItem('firstName', data.firstName)
+      navigate('/chat')
+    } catch {
+      setError('ไม่สามารถเชื่อมต่อ server ได้')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
