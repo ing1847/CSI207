@@ -17,7 +17,6 @@ function Login() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  // ─── รับ token จาก Google OAuth callback ───────────────
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const token = params.get('token')
@@ -27,7 +26,7 @@ function Login() {
     if (token && firstName) {
       localStorage.setItem('token', token)
       localStorage.setItem('firstName', firstName)
-      navigate('/chat')
+      navigate('/')  // ✅ แก้จาก '/chat'
     }
 
     if (error === 'google') {
@@ -35,7 +34,6 @@ function Login() {
     }
   }, [])
 
-  // ─── Login ปกติ ────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
@@ -50,7 +48,7 @@ function Login() {
       if (!res.ok) return setError(data.error)
       localStorage.setItem('token', data.token)
       localStorage.setItem('firstName', data.firstName)
-      navigate('/chat')
+      navigate('/')  // ✅ แก้จาก '/chat'
     } catch {
       setError('ไม่สามารถเชื่อมต่อ server ได้')
     } finally {
@@ -58,7 +56,6 @@ function Login() {
     }
   }
 
-  // ─── Login Google ──────────────────────────────────────
   const handleGoogleLogin = () => {
     window.location.href = 'http://localhost:5000/auth/google'
   }
@@ -66,18 +63,14 @@ function Login() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-
-        <div className="logo" onClick={() => navigate('/')}>
-        </div>
+        <div className="logo" onClick={() => navigate('/')}></div>
 
         <div className="greeting">
           <h2>ยินดีต้อนรับ</h2>
           <p>เข้าสู่ระบบ Chatbot ปาการัง</p>
         </div>
 
-        {error && (
-          <div className="error-msg">{error}</div>
-        )}
+        {error && <div className="error-msg">{error}</div>}
 
         <div className="field">
           <label>อีเมล</label>
@@ -99,9 +92,7 @@ function Login() {
           />
         </div>
 
-        <div className="forgot">
-          <a>ลืมรหัสผ่าน?</a>
-        </div>
+        <div className="forgot"><a>ลืมรหัสผ่าน?</a></div>
 
         <button className="submit-btn" onClick={handleSubmit} disabled={loading}>
           {loading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}
@@ -117,7 +108,6 @@ function Login() {
         <div className="footer-text">
           ยังไม่มีบัญชี? <a onClick={() => navigate('/register')}>สมัครสมาชิก</a>
         </div>
-
       </div>
     </div>
   )
