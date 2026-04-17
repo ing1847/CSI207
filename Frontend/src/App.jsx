@@ -1,19 +1,29 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import Login from './Login/Login'
-import Register from './Register/Register'
-import Chathome from './Home/Chathome'
+import { Routes, Route, useLocation } from "react-router-dom";
+
+import Navbar from "./components/Navbar";
+import Login from "./Login/Login";
+import Register from "./Register/Register";
+import Chathome from "./Home/Chathome";
 
 function App() {
+  const location = useLocation();
+
+  const hideNavbar =
+    location.pathname === "/login" ||
+    location.pathname === "/register";
+
   return (
-    <BrowserRouter>
+    <>
+      {!hideNavbar && <Navbar />}
+
       <Routes>
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/" element={<Chathome />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/chat" element={<Chathome />} />
+        <Route path="*" element={<Chathome />} />
       </Routes>
-    </BrowserRouter>
-  )
+    </>
+  );
 }
 
-export default App
+export default App;

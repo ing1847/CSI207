@@ -40,7 +40,7 @@ export default function Chathome() {
     <div className="ai-container">
       {/* Sidebar */}
       <div className="sidebar">
-        <h2>🌊 Travel AI</h2>
+        {/* <h2>🌊 Travel AI</h2> */}
         <button className="new-chat" onClick={() => setMessages([])}>
           + New Chat
         </button>
