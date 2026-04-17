@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './Login.css'
 
@@ -17,6 +17,25 @@ function Login() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
+  // ─── รับ token จาก Google OAuth callback ───────────────
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const token = params.get('token')
+    const firstName = params.get('firstName')
+    const error = params.get('error')
+
+    if (token && firstName) {
+      localStorage.setItem('token', token)
+      localStorage.setItem('firstName', firstName)
+      navigate('/chat')
+    }
+
+    if (error === 'google') {
+      setError('เข้าสู่ระบบด้วย Google ไม่สำเร็จ')
+    }
+  }, [])
+
+  // ─── Login ปกติ ────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
@@ -39,18 +58,26 @@ function Login() {
     }
   }
 
+  // ─── Login Google ──────────────────────────────────────
+  const handleGoogleLogin = () => {
+    window.location.href = 'http://localhost:5000/auth/google'
+  }
+
   return (
     <div className="auth-page">
       <div className="auth-card">
 
         <div className="logo" onClick={() => navigate('/')}>
-        
         </div>
 
         <div className="greeting">
           <h2>ยินดีต้อนรับ</h2>
           <p>เข้าสู่ระบบ Chatbot ปาการัง</p>
         </div>
+
+        {error && (
+          <div className="error-msg">{error}</div>
+        )}
 
         <div className="field">
           <label>อีเมล</label>
@@ -76,13 +103,13 @@ function Login() {
           <a>ลืมรหัสผ่าน?</a>
         </div>
 
-        <button className="submit-btn" onClick={handleSubmit}>
-          เข้าสู่ระบบ
+        <button className="submit-btn" onClick={handleSubmit} disabled={loading}>
+          {loading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}
         </button>
 
         <div className="divider">หรือ</div>
 
-        <button className="google-btn">
+        <button className="google-btn" onClick={handleGoogleLogin}>
           <GoogleIcon />
           ดำเนินการต่อด้วย Google
         </button>
