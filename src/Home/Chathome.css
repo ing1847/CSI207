@@ -1,0 +1,198 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  background: linear-gradient(to right, #eef4ff, #f8fbff);
+}
+
+/* Layout */
+.ai-container {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 260px;
+  background: #ffffff;
+  border-right: 1px solid #e5e5e5;
+  padding: 20px;
+}
+
+.sidebar h2 {
+  font-size: 20px;
+  margin-bottom: 20px;
+}
+
+.new-chat {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #3b82f6, #60a5fa);
+  border: none;
+  color: white;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.new-chat:hover {
+  transform: scale(1.05);
+}
+
+/* Main */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Home */
+.home {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.home h1 {
+  font-size: 56px;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.home p {
+  font-size: 20px;
+  color: #555;
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+/* Suggestions */
+.suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+.suggestions button {
+  padding: 16px 22px;
+  border-radius: 14px;
+  border: none;
+  background: #e0ecff;
+  color: #1e3a8a;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.suggestions button:hover {
+  background: #3b82f6;
+  color: white;
+}
+
+/* Chat */
+.chat-area {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+  overflow: hidden;
+}
+
+.chat-card {
+  width: 100%;
+  max-width: 1000px; /* ขยาย */
+  height: 100%;
+  background: white;
+  border-radius: 14px;
+  padding: 30px; /* เพิ่ม padding */
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.05);
+
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+/* Messages */
+.msg {
+  display: flex;
+  margin-bottom: 14px;
+}
+
+.msg.user {
+  justify-content: flex-end;
+}
+
+.msg.assistant {
+  justify-content: flex-start;
+}
+
+.msg-content {
+  padding: 16px 20px;
+  border-radius: 18px;
+  max-width: 75%;
+  line-height: 1.6;
+  font-size: 17px; /* ใหญ่ขึ้น */
+  word-wrap: break-word;
+}
+
+.msg.user .msg-content {
+  background: #3b82f6;
+  color: white;
+  border-bottom-right-radius: 6px;
+}
+
+.msg.assistant .msg-content {
+  background: #f1f5ff;
+  border-bottom-left-radius: 6px;
+}
+
+/* Input */
+.input-box {
+  display: flex;
+  justify-content: center;
+  padding: 15px;
+  background: transparent;
+}
+
+.input-box input {
+  width: 100%;
+  max-width: 800px; /* ขยาย */
+  padding: 20px 22px;
+  border-radius: 25px;
+  border: none;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+  font-size: 18px; /* ใหญ่ขึ้น */
+}
+
+.input-box input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.3);
+}
+
+.input-box button {
+  margin-left: 12px;
+  padding: 18px 22px;
+  border-radius: 16px;
+  border: none;
+  background: #3b82f6;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.input-box button:hover {
+  transform: scale(1.05);
+}
