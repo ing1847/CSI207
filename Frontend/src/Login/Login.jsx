@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import AuthLayout from '../AuthLayout/AuthLayout'
 import './Login.css'
 
 const GoogleIcon = () => (
@@ -22,51 +21,59 @@ function Login() {
   }
 
   return (
-    <AuthLayout>
-      <div className="greeting">
-        <h2>ยินดีต้อนรับกลับ</h2>
-        <p>เข้าสู่ระบบ Chatbot ปาการัง</p>
+    <div className="auth-page">
+      <div className="auth-card">
+
+        <div className="logo" onClick={() => navigate('/')}>
+        
+        </div>
+
+        <div className="greeting">
+          <h2>ยินดีต้อนรับ</h2>
+          <p>เข้าสู่ระบบ Chatbot ปาการัง</p>
+        </div>
+
+        <div className="field">
+          <label>อีเมล</label>
+          <input
+            type="email"
+            placeholder="your@email.com"
+            value={form.email}
+            onChange={e => setForm({ ...form, email: e.target.value })}
+          />
+        </div>
+
+        <div className="field">
+          <label>รหัสผ่าน</label>
+          <input
+            type="password"
+            placeholder="••••••••"
+            value={form.password}
+            onChange={e => setForm({ ...form, password: e.target.value })}
+          />
+        </div>
+
+        <div className="forgot">
+          <a>ลืมรหัสผ่าน?</a>
+        </div>
+
+        <button className="submit-btn" onClick={handleSubmit}>
+          เข้าสู่ระบบ
+        </button>
+
+        <div className="divider">หรือ</div>
+
+        <button className="google-btn">
+          <GoogleIcon />
+          ดำเนินการต่อด้วย Google
+        </button>
+
+        <div className="footer-text">
+          ยังไม่มีบัญชี? <a onClick={() => navigate('/register')}>สมัครสมาชิก</a>
+        </div>
+
       </div>
-
-      <div className="field">
-        <label>อีเมล</label>
-        <input
-          type="email"
-          placeholder="your@email.com"
-          value={form.email}
-          onChange={e => setForm({ ...form, email: e.target.value })}
-        />
-      </div>
-
-      <div className="field">
-        <label>รหัสผ่าน</label>
-        <input
-          type="password"
-          placeholder="••••••••"
-          value={form.password}
-          onChange={e => setForm({ ...form, password: e.target.value })}
-        />
-      </div>
-
-      <div className="forgot">
-        <a>ลืมรหัสผ่าน?</a>
-      </div>
-
-      <button className="submit-btn" onClick={handleSubmit}>
-        เข้าสู่ระบบ
-      </button>
-
-      <div className="divider">หรือ</div>
-
-      <button className="google-btn">
-        <GoogleIcon />
-        ดำเนินการต่อด้วย Google
-      </button>
-
-      <div className="footer-text">
-        ยังไม่มีบัญชี? <a onClick={() => navigate('/register')}>สมัครสมาชิก</a>
-      </div>
-    </AuthLayout>
+    </div>
   )
 }
 

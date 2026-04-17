@@ -175,6 +175,7 @@ body {
   border: none;
   box-shadow: 0 6px 20px rgba(0,0,0,0.12);
   font-size: 18px; /* ใหญ่ขึ้น */
+    color: #000; /* 👈 เพิ่มตรงนี้ */
 }
 
 .input-box input:focus {
