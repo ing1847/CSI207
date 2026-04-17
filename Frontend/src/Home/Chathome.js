@@ -55,13 +55,13 @@ export default function Chathome() {
 
             <div className="suggestions">
               <button onClick={() => setInput("ปะการังคืออะไร")}>
-                 จังหวัดไหนเหมาะกับการดำน้ำมากที่สุด
+                🪸 ปะการังคืออะไร
               </button>
               <button onClick={() => setInput("แนะนำที่เที่ยวทะเล")}>
-                ทะเลไทยที่ไหนน่าเที่ยวบ้าง
+                🌴 ที่เที่ยวทะเล
               </button>
               <button onClick={() => setInput("ดำน้ำที่ไหนดี")}>
-                แนะนำ Activity ในทะเลไทย
+                🤿 ดำน้ำที่ไหนดี
               </button>
             </div>
 
