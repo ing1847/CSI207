@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import AuthLayout from '../AuthLayout/AuthLayout'
 import './Register.css'
 
 function getStrength(password) {
@@ -10,7 +9,7 @@ function getStrength(password) {
   if (/[0-9]/.test(password)) score++
   if (/[^A-Za-z0-9]/.test(password)) score++
   const widths = ['0%', '25%', '50%', '75%', '100%']
-  const colors = ['#e24b4a', '#e24b4a', '#ef9f27', '#97c459', '#1d9e75']
+  const colors = ['#ef4444', '#ef4444', '#f59e0b', '#3b82f6', '#22c55e']
   return { width: widths[score], color: colors[score] }
 }
 
@@ -23,113 +22,70 @@ function Register() {
     password: '',
     confirmPassword: '',
   })
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
 
   const strength = getStrength(form.password)
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault()
-    setError('')
-    if (form.password !== form.confirmPassword) return setError('รหัสผ่านไม่ตรงกัน')
-    setLoading(true)
-    try {
-      const res = await fetch('http://localhost:5000/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form)
-      })
-      const data = await res.json()
-      if (!res.ok) return setError(data.error)
-      alert('สมัครสมาชิกสำเร็จ!')
-      navigate('/login')
-    } catch {
-      setError('ไม่สามารถเชื่อมต่อ server ได้')
-    } finally {
-      setLoading(false)
+    if (form.password !== form.confirmPassword) {
+      alert('รหัสผ่านไม่ตรงกัน')
+      return
     }
+    console.log('Register:', form)
   }
 
-  const set = (key) => (e) => setForm({ ...form, [key]: e.target.value })
-
   return (
-    <AuthLayout>
-      <div className="greeting">
-        <h2>เริ่มต้นการสำรวจ</h2>
-        <p>สร้างบัญชีเพื่อเรียนรู้โลกปะการัง</p>
-      </div>
+    <div className="auth-page">
+      <div className="auth-card">
 
-      <div className="row-2">
-        <div className="field">
+        <div className="logo" onClick={() => navigate('/')}>
+
+        </div>
+
+        <div className="greeting">
+          <h2>เริ่มต้นการสำรวจ</h2>
+          <p>สร้างบัญชีเพื่อเรียนรู้โลกปะการัง</p>
+        </div>
+
+        <div className="row-2">
           <label>ชื่อ</label>
-          <input
-            type="text"
-            placeholder="ชื่อจริง"
-            value={form.firstName}
-            onChange={set('firstName')}
-          />
-        </div>
-        <div className="field">
+          <input placeholder="ชื่อ" onChange={e => setForm({ ...form, firstName: e.target.value })} />
           <label>นามสกุล</label>
-          <input
-            type="text"
-            placeholder="นามสกุล"
-            value={form.lastName}
-            onChange={set('lastName')}
-          />
+          <input placeholder="นามสกุล" onChange={e => setForm({ ...form, lastName: e.target.value })} />
         </div>
-      </div>
 
-      <div className="field">
-        <label>อีเมล</label>
-        <input
-          type="email"
-          placeholder="your@email.com"
-          value={form.email}
-          onChange={set('email')}
-        />
-      </div>
-
-      <div className="field">
-        <label>รหัสผ่าน</label>
-        <input
-          type="password"
-          placeholder="••••••••"
-          value={form.password}
-          onChange={set('password')}
-        />
-        <div className="strength-bar">
-          <div
-            className="strength-fill"
-            style={{ width: strength.width, background: strength.color }}
-          />
+        <div className="field">
+          <label>อีเมล</label>
+          <input type="email" placeholder="your@email.com"
+            onChange={e => setForm({ ...form, email: e.target.value })} />
         </div>
+
+        <div className="field">
+          <label>รหัสผ่าน</label>
+          <input type="password"
+            onChange={e => setForm({ ...form, password: e.target.value })} />
+          <div className="strength-bar">
+            <div className="strength-fill"
+              style={{ width: strength.width, background: strength.color }} />
+          </div>
+        </div>
+
+        <div className="field">
+          <label>ยืนยันรหัสผ่าน</label>
+          <input type="password"
+            onChange={e => setForm({ ...form, confirmPassword: e.target.value })} />
+        </div>
+
+        <button className="submit-btn" onClick={handleSubmit}>
+          สร้างบัญชี
+        </button>
+
+        <div className="footer-text">
+          มีบัญชีแล้ว? <a onClick={() => navigate('/login')}>เข้าสู่ระบบ</a>
+        </div>
+
       </div>
-
-      <div className="field">
-        <label>ยืนยันรหัสผ่าน</label>
-        <input
-          type="password"
-          placeholder="••••••••"
-          value={form.confirmPassword}
-          onChange={set('confirmPassword')}
-        />
-      </div>
-
-      {error && <div style={{ color: 'red', fontSize: '14px', marginTop: '-8px' }}>{error}</div>}
-
-      <button className="submit-btn" onClick={handleSubmit} disabled={loading}>
-        {loading ? 'กำลังสมัครสมาชิก...' : 'สร้างบัญชี'}
-      </button>
-
-      <div className="terms">
-        การสมัครสมาชิกแสดงว่าคุณยอมรับ <a>นโยบายความเป็นส่วนตัว</a>
-      </div>
-
-      <div className="footer-text">
-        มีบัญชีแล้ว? <a onClick={() => navigate('/login')}>เข้าสู่ระบบ</a>
-      </div>
-    </AuthLayout>
+    </div>
   )
 }
 

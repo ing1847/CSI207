@@ -54,14 +54,14 @@ export default function Chathome() {
             <p>ผู้ช่วย AI แนะนำปะการัง และการท่องเที่ยวทะเลไทย</p>
 
             <div className="suggestions">
-              <button onClick={() => setInput("ปะการังคืออะไร")}>
-                🪸 ปะการังคืออะไร
+              <button onClick={() => setInput("จังหวัดไหนเหมาะกับการดำน้ำมากที่สุด")}>
+                 จังหวัดไหนเหมาะกับการดำน้ำมากที่สุด
               </button>
-              <button onClick={() => setInput("แนะนำที่เที่ยวทะเล")}>
-                🌴 ที่เที่ยวทะเล
+              <button onClick={() => setInput("ทะเลไทยที่ไหนน่าเที่ยวบ้าง")}>
+                ทะเลไทยที่ไหนน่าเที่ยวบ้าง
               </button>
-              <button onClick={() => setInput("ดำน้ำที่ไหนดี")}>
-                🤿 ดำน้ำที่ไหนดี
+              <button onClick={() => setInput("แนะนำ Activity ในทะเลไทย")}>
+                แนะนำ Activity ในทะเลไทย
               </button>
             </div>
 
