@@ -21,15 +21,16 @@ function Login() {
     const params = new URLSearchParams(window.location.search)
     const token = params.get('token')
     const firstName = params.get('firstName')
-    const error = params.get('error')
+    const errorParam = params.get('error')
 
     if (token && firstName) {
       localStorage.setItem('token', token)
-      localStorage.setItem('firstName', firstName)
-      navigate('/')  // ✅ แก้จาก '/chat'
+      localStorage.setItem('firstName', decodeURIComponent(firstName))
+      window.location.replace('/')  // ✅ แก้ตรงนี้
+      return
     }
 
-    if (error === 'google') {
+    if (errorParam === 'google') {
       setError('เข้าสู่ระบบด้วย Google ไม่สำเร็จ')
     }
   }, [])
@@ -48,7 +49,7 @@ function Login() {
       if (!res.ok) return setError(data.error)
       localStorage.setItem('token', data.token)
       localStorage.setItem('firstName', data.firstName)
-      navigate('/')  // ✅ แก้จาก '/chat'
+      navigate('/')
     } catch {
       setError('ไม่สามารถเชื่อมต่อ server ได้')
     } finally {

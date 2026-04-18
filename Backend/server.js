@@ -75,11 +75,18 @@ app.get('/auth/google',
 )
 
 app.get('/auth/google/callback',
-  passport.authenticate('google', { failureRedirect: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=google` }),
+  passport.authenticate('google', {
+    failureRedirect: `${process.env.FRONTEND_URL}/login?error=google`
+  }),
   (req, res) => {
-    const token = jwt.sign({ userId: req.user._id }, process.env.JWT_SECRET, { expiresIn: '7d' })
+    const token = jwt.sign(
+      { userId: req.user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    )
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
-    res.redirect(`${frontendUrl}/login?token=${token}&firstName=${req.user.firstName}`)
+    const firstName = encodeURIComponent(req.user.firstName)  // ✅ encode ชื่อ
+    res.redirect(`${frontendUrl}/login?token=${token}&firstName=${firstName}`)
   }
 )
 
