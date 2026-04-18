@@ -1,105 +1,80 @@
-import React, { useState, useEffect, useRef } from "react";
-import "./Chathome.css";
+import { useState } from "react";
 
-export default function Chathome() {
-  const [messages, setMessages] = useState([]);
+function Chat() {
   const [input, setInput] = useState("");
-  const bottomRef = useRef(null);
+  const [messages, setMessages] = useState([]);
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
     if (!input.trim()) return;
 
-    const newMessages = [
-      ...messages,
-      { role: "user", content: input },
-      { role: "assistant", content: generateResponse(input) }
-    ];
+    // แสดงข้อความ user ก่อน
+    setMessages((prev) => [...prev, { role: "user", text: input }]);
 
-    setMessages(newMessages);
+    try {
+      const res = await fetch("http://127.0.0.1:5000/ask", {   // 🔥 เปลี่ยนตรงนี้
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ question: input }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Server error");
+      }
+
+      const data = await res.json();
+
+      setMessages((prev) => [
+        ...prev,
+        { role: "bot", text: data.answer },
+      ]);
+
+    } catch (err) {
+      console.error("FETCH ERROR:", err);
+
+      setMessages((prev) => [
+        ...prev,
+        { role: "bot", text: "❌ ติดต่อ backend ไม่ได้" },
+      ]);
+    }
+
     setInput("");
   };
 
-  const generateResponse = (text) => {
-    const input = text.toLowerCase();
-
-    if (input.includes("ปะการัง")) {
-      return "🪸 ปะการังเป็นสิ่งมีชีวิตสำคัญในทะเล และเป็นบ้านของสัตว์น้ำมากมาย";
-    }
-    if (input.includes("เที่ยว")) {
-      return "🌴 แนะนำ: เกาะเต่า • สิมิลัน • กระบี่";
-    }
-
-    return "ลองถามเกี่ยวกับทะเลไทย หรือปะการังดูนะ 😊";
-  };
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
   return (
-    <div className="ai-container">
-      {/* Sidebar */}
-      <div className="sidebar">
-        {/* <h2>🌊 Travel AI</h2> */}
-        <button className="new-chat" onClick={() => setMessages([])}>
-          + New Chat
-        </button>
-      </div>
+    <div style={{ width: "400px", margin: "auto" }}>
+      <h2>🌊 Marine Chatbot</h2>
 
-      {/* Main */}
-      <div className="main">
-        {messages.length === 0 ? (
-          <div className="home">
-            <h1>🌊 Travel AI Assistant</h1>
-            <p>ผู้ช่วย AI แนะนำปะการัง และการท่องเที่ยวทะเลไทย</p>
-
-            <div className="suggestions">
-              <button onClick={() => setInput("จังหวัดไหนเหมาะกับการดำน้ำมากที่สุด")}>
-                 จังหวัดไหนเหมาะกับการดำน้ำมากที่สุด
-              </button>
-              <button onClick={() => setInput("ทะเลไทยที่ไหนน่าเที่ยวบ้าง")}>
-                ทะเลไทยที่ไหนน่าเที่ยวบ้าง
-              </button>
-              <button onClick={() => setInput("แนะนำ Activity ในทะเลไทย")}>
-                แนะนำ Activity ในทะเลไทย
-              </button>
-            </div>
-
-            <div className="input-box">
-              <input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask anything..."
-                onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-              />
-              <button onClick={sendMessage}>➤</button>
-            </div>
+      <div
+        style={{
+          border: "1px solid #ccc",
+          height: "400px",
+          overflow: "auto",
+          padding: "10px",
+        }}
+      >
+        {messages.map((m, i) => (
+          <div
+            key={i}
+            style={{
+              textAlign: m.role === "user" ? "right" : "left",
+              marginBottom: "10px",
+            }}
+          >
+            <p>{m.text}</p>
           </div>
-        ) : (
-          <>
-            <div className="chat-area">
-              <div className="chat-card">
-                {messages.map((msg, index) => (
-                  <div key={index} className={`msg ${msg.role}`}>
-                    <div className="msg-content">{msg.content}</div>
-                  </div>
-                ))}
-                <div ref={bottomRef} />
-              </div>
-            </div>
-
-            <div className="input-box">
-              <input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Send a message..."
-                onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-              />
-              <button onClick={sendMessage}>➤</button>
-            </div>
-          </>
-        )}
+        ))}
       </div>
+
+      <input
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        placeholder="พิมพ์คำถาม..."
+      />
+      <button onClick={sendMessage}>ส่ง</button>
     </div>
   );
 }
+
+export default Chat;
