@@ -21,19 +21,21 @@ function Login() {
     const params = new URLSearchParams(window.location.search)
     const token = params.get('token')
     const firstName = params.get('firstName')
+    const userId = params.get('userId')
     const errorParam = params.get('error')
 
     if (token && firstName) {
       localStorage.setItem('token', token)
       localStorage.setItem('firstName', decodeURIComponent(firstName))
-      window.location.replace('/')  // ✅ แก้ตรงนี้
+      if (userId) localStorage.setItem('userId', userId)
+      navigate('/select', { replace: true })
       return
     }
 
     if (errorParam === 'google') {
       setError('เข้าสู่ระบบด้วย Google ไม่สำเร็จ')
     }
-  }, [])
+  }, [navigate])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -49,7 +51,8 @@ function Login() {
       if (!res.ok) return setError(data.error)
       localStorage.setItem('token', data.token)
       localStorage.setItem('firstName', data.firstName)
-      navigate('/')
+      localStorage.setItem('userId', data.userId)
+      navigate('/select')
     } catch {
       setError('ไม่สามารถเชื่อมต่อ server ได้')
     } finally {
@@ -93,8 +96,6 @@ function Login() {
           />
         </div>
 
-        <div className="forgot"><a>ลืมรหัสผ่าน?</a></div>
-
         <button className="submit-btn" onClick={handleSubmit} disabled={loading}>
           {loading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}
         </button>
@@ -107,7 +108,10 @@ function Login() {
         </button>
 
         <div className="footer-text">
-          ยังไม่มีบัญชี? <a onClick={() => navigate('/register')}>สมัครสมาชิก</a>
+          ยังไม่มีบัญชี?{' '}
+          <button type="button" onClick={() => navigate('/register')}>
+            สมัครสมาชิก
+          </button>
         </div>
       </div>
     </div>

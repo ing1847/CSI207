@@ -11,7 +11,7 @@ require('dotenv').config()
 const app = express()
 
 app.use(cors({
-  origin: function(origin, callback) {
+  origin: function (origin, callback) {
     callback(null, true)
   },
   credentials: true
@@ -29,18 +29,29 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ MongoDB connected'))
   .catch(err => console.error('❌ MongoDB error:', err))
 
-// ─── Schema ───────────────────────────────────────────────
 const userSchema = new mongoose.Schema({
   firstName: String,
   lastName: String,
   email: { type: String, unique: true },
-  password: String,
+  password: { type: String, default: null },
   googleId: String,
 }, { timestamps: true })
 
 const User = mongoose.model('User', userSchema)
 
-// ─── Passport Google Strategy ─────────────────────────────
+passport.serializeUser((user, done) => {
+  done(null, user._id.toString())
+})
+
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await User.findById(id)
+    done(null, user)
+  } catch (err) {
+    done(err, null)
+  }
+})
+
 passport.use(new GoogleStrategy({
   clientID: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
@@ -53,9 +64,14 @@ passport.use(new GoogleStrategy({
         firstName: profile.name.givenName,
         lastName: profile.name.familyName,
         email: profile.emails[0].value,
-        password: await bcrypt.hash(Math.random().toString(36), 10),
+        password: null,
         googleId: profile.id
       })
+    } else {
+      user.googleId = profile.id
+      user.firstName = profile.name.givenName
+      user.lastName = profile.name.familyName
+      user = await user.save()
     }
     return done(null, user)
   } catch (err) {
@@ -63,13 +79,6 @@ passport.use(new GoogleStrategy({
   }
 }))
 
-passport.serializeUser((user, done) => done(null, user._id))
-passport.deserializeUser(async (id, done) => {
-  const user = await User.findById(id)
-  done(null, user)
-})
-
-// ─── Auth Routes ──────────────────────────────────────────
 app.get('/auth/google',
   passport.authenticate('google', { scope: ['profile', 'email'] })
 )
@@ -84,13 +93,14 @@ app.get('/auth/google/callback',
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     )
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
-    const firstName = encodeURIComponent(req.user.firstName)  // ✅ encode ชื่อ
-    res.redirect(`${frontendUrl}/login?token=${token}&firstName=${firstName}`)
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000'
+    const firstName = encodeURIComponent(req.user.firstName)
+    const userId = req.user._id.toString()
+    // ← เพิ่ม userId ใน redirect
+    res.redirect(`${frontendUrl}/login?token=${token}&firstName=${firstName}&userId=${userId}`)
   }
 )
 
-// ─── API Routes ───────────────────────────────────────────
 app.post('/api/register', async (req, res) => {
   try {
     const { firstName, lastName, email, password } = req.body
@@ -107,13 +117,20 @@ app.post('/api/login', async (req, res) => {
     const { email, password } = req.body
     const user = await User.findOne({ email })
     if (!user) return res.status(401).json({ error: 'ไม่พบผู้ใช้งาน' })
+    if (!user.password) return res.status(401).json({ error: 'บัญชีนี้ใช้ Google login เท่านั้น' })
     const match = await bcrypt.compare(password, user.password)
     if (!match) return res.status(401).json({ error: 'รหัสผ่านไม่ถูกต้อง' })
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' })
-    res.json({ token, firstName: user.firstName })
+    // ← เพิ่ม userId ใน response
+    res.json({ token, firstName: user.firstName, userId: user._id.toString() })
   } catch (err) {
     res.status(500).json({ error: 'เกิดข้อผิดพลาด' })
   }
+})
+
+app.use((err, req, res, next) => {
+  console.error('❌ Server Error:', err)
+  res.status(500).json({ error: err.message })
 })
 
 app.listen(process.env.PORT || 5000, () => {
