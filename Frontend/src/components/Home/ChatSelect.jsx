@@ -3,19 +3,19 @@ import "./ChatSelect.css";
 
 const topics = [
   { icon: "🏖️", label: "เที่ยวทะเล", desc: "แนะนำชายหาด เกาะ และกิจกรรมทางน้ำ", value: "เที่ยวทะเล" },
-  { icon: "🏨", label: "ที่พัก", desc: "โรงแรม รีสอร์ท และที่พักสุดคุ้ม", value: "ที่พัก" },
-  { icon: "🍜", label: "ร้านอาหาร", desc: "อาหารอร่อย ร้านเด็ด และของกิน", value: "ร้านอาหาร" },
-  { icon: "🗺️", label: "วางแผนทริป", desc: "วางแผนเส้นทางและตารางเดินทาง", value: "วางแผนทริป" },
-  { icon: "🤿", label: "กิจกรรม", desc: "ดำน้ำ ล่องแพ และกิจกรรมผจญภัย", value: "กิจกรรม" },
-  { icon: "💰", label: "งบประมาณ", desc: "ท่องเที่ยวให้คุ้มค่าในทุกงบ", value: "งบประมาณ" },
+  { icon: "🏨", label: "ที่เที่ยว", desc: "เที่ยวในงบ 5,000 บาท มีที่ไหนบ้าง", value: "ที่เที่ยว" },
+  { icon: "🐠", label: "ปะการัง", desc: "อยากดูปะการัง ไปที่ไหนถึงจะเจอ", value: "ปะการัง" },
+  { icon: "🗺️", label: "วางแผนทริป", desc: "ถ้าจะไปพายเรือมีที่ไหนแนะนำบ้าง", value: "วางแผนทริป" },
+  { icon: "🤿", label: "กิจกรรม", desc: "อยากดำน้ำ มีที่ไหนน่าสนใจ", value: "กิจกรรม" },
+  { icon: "🐠", label: "ปลา", desc: "อยากดูปลาเยอะๆ ควรไปที่ไหนดี", value: "ปลา" },
 ];
 
 function ChatSelect() {
   const navigate = useNavigate();
   const firstName = localStorage.getItem("firstName");
 
-  const handleSelect = (topic) => {
-    navigate("/chat", { state: { topic } });
+  const handleSelect = (desc) => {
+    navigate("/chat", { state: { topic: desc } });
   };
 
   return (
@@ -28,7 +28,11 @@ function ChatSelect() {
 
       <div className="topic-grid">
         {topics.map((t) => (
-          <div key={t.value} className="topic-card" onClick={() => handleSelect(t.value)}>
+          <div
+            key={t.value}
+            className="topic-card"
+            onClick={() => handleSelect(t.desc)}
+          >
             <div className="topic-icon">{t.icon}</div>
             <div className="topic-label">{t.label}</div>
             <div className="topic-desc">{t.desc}</div>

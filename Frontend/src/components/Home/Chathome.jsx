@@ -6,7 +6,6 @@ function Chat() {
   const location = useLocation();
   const topic = location.state?.topic || null;
 
-  // key สำหรับ localStorage แยกตาม user
   const userId = localStorage.getItem("userId") || "guest";
   const historyKey = `chatHistory_${userId}`;
 
@@ -19,19 +18,63 @@ function Chat() {
       return [];
     }
   });
+
   const [activeIndex, setActiveIndex] = useState(null);
-  const [messages, setMessages] = useState(() => {
-    if (topic) {
-      return [{ role: "assistant", content: `สวัสดีครับ! วันนี้จะถามเรื่อง "${topic}" ได้เลยนะครับ 😊` }];
-    }
-    return [];
-  });
+  const [messages, setMessages] = useState([]);
   const chatEndRef = useRef(null);
 
+  // ✅ save history
   useEffect(() => {
     localStorage.setItem(historyKey, JSON.stringify(history));
-  }, [history, historyKey]);
+  }, [history]);
 
+  // ✅ ยิง topic อัตโนมัติ (ไม่ยิงซ้ำ)
+  useEffect(() => {
+    if (topic && messages.length === 0) {
+      autoSendTopic(topic);
+    }
+  }, [topic]);
+
+  const autoSendTopic = async (topicText) => {
+    const userMsg = { role: "user", content: topicText };
+    setMessages([userMsg]);
+
+    try {
+      const res = await fetch("http://127.0.0.1:5000/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          question: `ช่วยแนะนำ${topicText}ในไทย พร้อมรายละเอียด`,
+        }),
+      });
+
+      const data = await res.json();
+      const assistantMsg = { role: "assistant", content: data.answer };
+
+      setMessages((prev) => {
+        const updated = [...prev, assistantMsg];
+
+        setHistory((prevHistory) => {
+          const title =
+            topicText.length > 30
+              ? topicText.slice(0, 30) + "..."
+              : topicText;
+
+          setActiveIndex(prevHistory.length);
+          return [...prevHistory, { title, messages: updated }];
+        });
+
+        return updated;
+      });
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "❌ ติดต่อ backend ไม่ได้" },
+      ]);
+    }
+  };
+
+  // ✅ ส่งข้อความปกติ
   const sendMessage = async () => {
     if (!input.trim()) return;
 
@@ -60,7 +103,11 @@ function Chat() {
             };
             return newHistory;
           } else {
-            const title = input.length > 30 ? input.slice(0, 30) + "..." : input;
+            const title =
+              input.length > 30
+                ? input.slice(0, 30) + "..."
+                : input;
+
             setActiveIndex(prevHistory.length);
             return [...prevHistory, { title, messages: updated }];
           }
@@ -79,13 +126,6 @@ function Chat() {
   };
 
   const startNewChat = () => {
-    if (messages.length > 0 && activeIndex === null) {
-      const title =
-        messages[0].content.length > 30
-          ? messages[0].content.slice(0, 30) + "..."
-          : messages[0].content;
-      setHistory((prev) => [...prev, { title, messages }]);
-    }
     setMessages([]);
     setActiveIndex(null);
   };
@@ -97,11 +137,8 @@ function Chat() {
 
   const deleteChat = (e, index) => {
     e.stopPropagation();
-    setHistory((prev) => {
-      const updated = prev.filter((_, i) => i !== index);
-      localStorage.setItem(historyKey, JSON.stringify(updated));
-      return updated;
-    });
+    setHistory((prev) => prev.filter((_, i) => i !== index));
+
     if (activeIndex === index) {
       setMessages([]);
       setActiveIndex(null);
@@ -135,7 +172,6 @@ function Chat() {
                 <button
                   className="delete-btn"
                   onClick={(e) => deleteChat(e, i)}
-                  title="ลบ"
                 >
                   ×
                 </button>
@@ -153,11 +189,13 @@ function Chat() {
               <p>เริ่มบทสนทนาใหม่ได้เลย!</p>
             </div>
           )}
+
           {messages.map((m, i) => (
             <div key={i} className={`msg ${m.role}`}>
               <div className="bubble">{m.content}</div>
             </div>
           ))}
+
           <div ref={chatEndRef}></div>
         </div>
 
