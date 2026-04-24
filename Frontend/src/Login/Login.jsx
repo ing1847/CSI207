@@ -25,12 +25,13 @@ function Login() {
     const errorParam = params.get('error')
 
     if (token && firstName) {
-      localStorage.setItem('token', token)
-      localStorage.setItem('firstName', decodeURIComponent(firstName))
-      if (userId) localStorage.setItem('userId', userId)
-      navigate('/select', { replace: true })
-      return
-    }
+  localStorage.setItem('token', token)
+  localStorage.setItem('firstName', decodeURIComponent(firstName))
+  if (userId) localStorage.setItem('userId', userId)
+  
+  navigate('/select') // เปลี่ยนจาก navigate('/select') → force full reload
+  return
+}
 
     if (errorParam === 'google') {
       setError('เข้าสู่ระบบด้วย Google ไม่สำเร็จ')

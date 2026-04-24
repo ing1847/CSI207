@@ -29,6 +29,8 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ MongoDB connected'))
   .catch(err => console.error('❌ MongoDB error:', err))
 
+// ─── Models ───────────────────────────────────────────────────────────────────
+
 const userSchema = new mongoose.Schema({
   firstName: String,
   lastName: String,
@@ -38,6 +40,36 @@ const userSchema = new mongoose.Schema({
 }, { timestamps: true })
 
 const User = mongoose.model('User', userSchema)
+
+const chatHistorySchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  sessionId: { type: String, required: true, unique: true },
+  title: { type: String, default: 'บทสนทนาใหม่' },
+  messages: [
+    {
+      role: { type: String, enum: ['user', 'bot'] },
+      text: String,
+    }
+  ],
+}, { timestamps: true })
+
+const ChatHistory = mongoose.model('ChatHistory', chatHistorySchema)
+
+// ─── Auth Middleware ───────────────────────────────────────────────────────────
+
+const authMiddleware = (req, res, next) => {
+  const token = req.headers.authorization?.split(' ')[1]
+  if (!token) return res.status(401).json({ error: 'No token' })
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET)
+    req.userId = decoded.userId
+    next()
+  } catch {
+    res.status(401).json({ error: 'Invalid token' })
+  }
+}
+
+// ─── Passport / Google OAuth ───────────────────────────────────────────────────
 
 passport.serializeUser((user, done) => {
   done(null, user._id.toString())
@@ -79,6 +111,8 @@ passport.use(new GoogleStrategy({
   }
 }))
 
+// ─── Auth Routes ───────────────────────────────────────────────────────────────
+
 app.get('/auth/google',
   passport.authenticate('google', { scope: ['profile', 'email'] })
 )
@@ -96,7 +130,6 @@ app.get('/auth/google/callback',
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000'
     const firstName = encodeURIComponent(req.user.firstName)
     const userId = req.user._id.toString()
-    // ← เพิ่ม userId ใน redirect
     res.redirect(`${frontendUrl}/login?token=${token}&firstName=${firstName}&userId=${userId}`)
   }
 )
@@ -121,12 +154,72 @@ app.post('/api/login', async (req, res) => {
     const match = await bcrypt.compare(password, user.password)
     if (!match) return res.status(401).json({ error: 'รหัสผ่านไม่ถูกต้อง' })
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' })
-    // ← เพิ่ม userId ใน response
     res.json({ token, firstName: user.firstName, userId: user._id.toString() })
   } catch (err) {
     res.status(500).json({ error: 'เกิดข้อผิดพลาด' })
   }
 })
+
+// ─── History Routes ────────────────────────────────────────────────────────────
+
+// GET รายการ sessions ทั้งหมดของ user
+app.get('/history/:userId', authMiddleware, async (req, res) => {
+  try {
+    const sessions = await ChatHistory.find(
+      { userId: req.params.userId },
+      'sessionId title updatedAt'
+    ).sort({ updatedAt: -1 })
+    res.json(sessions)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// POST บันทึก / อัปเดต session
+app.post('/history/save', authMiddleware, async (req, res) => {
+  try {
+    const { sessionId, messages } = req.body
+    if (!sessionId || !messages?.length) {
+      return res.status(400).json({ error: 'sessionId และ messages จำเป็นต้องมี' })
+    }
+    const firstUserMsg = messages.find(m => m.role === 'user')
+    const title = firstUserMsg
+      ? firstUserMsg.text.slice(0, 40)
+      : 'บทสนทนาใหม่'
+
+    const history = await ChatHistory.findOneAndUpdate(
+      { sessionId },
+      { userId: req.userId, sessionId, messages, title },
+      { upsert: true, new: true }
+    )
+    res.json({ ok: true, sessionId: history.sessionId, title: history.title })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// GET ดึงข้อความใน session เดียว
+app.get('/history/session/:sid', authMiddleware, async (req, res) => {
+  try {
+    const history = await ChatHistory.findOne({ sessionId: req.params.sid })
+    if (!history) return res.status(404).json({ error: 'ไม่พบ session' })
+    res.json({ messages: history.messages })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// DELETE ลบ session
+app.delete('/history/session/:sid', authMiddleware, async (req, res) => {
+  try {
+    await ChatHistory.findOneAndDelete({ sessionId: req.params.sid })
+    res.json({ ok: true })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// ─── Error Handler ─────────────────────────────────────────────────────────────
 
 app.use((err, req, res, next) => {
   console.error('❌ Server Error:', err)
